@@ -62,3 +62,9 @@ npm run build
 ```sh
 npm run lint
 ```
+
+### Lancement du build docker 
+
+```
+docker build -t ijudo_api:0.1 . --network=host
+```

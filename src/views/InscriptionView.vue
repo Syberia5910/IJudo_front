@@ -1,34 +1,30 @@
 <script lang="ts">
 import axios from 'axios'
 import moment from 'moment'
-import { Club } from '../classes/club'
-
-
-const clubApiUrl = import.meta.env.VITE_ROOT_API + "/club/"
-const inscriptionApiUrl = import.meta.env.VITE_ROOT_API + "/inscription/"
-const categoriesApiUrl = import.meta.env.VITE_ROOT_API + "/categories/"
-const categoryApiUrl = import.meta.env.VITE_ROOT_API + "/category/"
-const tournamentsApiUrl = import.meta.env.VITE_ROOT_API + "/tournaments/"
+import * as API from '../constants/api'
+import type { Club } from '../interfaces/club'
+import type { Category } from '../interfaces/category'
+import type { Tournament } from '../interfaces/tournament'
+import type { InscriptionData } from '../interfaces/inscriptionData'
 
 export default {
   data() {
     return {
-      tournoiID: null,
-      tournoi: null,
-      tournois: [],
-      categoryID: null,
-      category: {},
-      categories: [],
+      tournoiID: null as number | null,
+      tournoi: null as Tournament | null,
+      tournois: [] as Tournament[],
+      categoryID: null as number | null,
+      category: {} as Category,
+      categories: [] as Category[],
       nom: "",
       prenom: "",
       dateNaissance: "",
-      club: new Club(),
-      clubID: 0,
-      clubs: [],
+      club: "" as string | Club,
+      clubs: [] as Club[],
       dateNaissanceFormated: "",
       ceinture: "",
-      poid: null,
-      ceintures: ["Blanc", "Blanc Jaune", " Jaune", "Jaune Orange", "Orange", "Orange Vert", "Vert", "Bleu"],
+      poid: null as number | null,
+      ceintures: ["Blanc", "Blanc Jaune", "Jaune", "Jaune Orange", "Orange", "Orange Vert", "Vert", "Bleu"],
       sexe: "",
       date_min: "",
       date_max: "",
@@ -43,80 +39,95 @@ export default {
   methods: {
     async submit() {
       this.snackbarText = ""
-      if (typeof this.club == "string") {
-        let clubData = {
-          "nom": this.club
+      try {
+        if (typeof this.club === "string") {
+          const clubData = { nom: this.club }
+          const response = await axios.post(API.clubUrl, clubData)
+          this.club = response.data
+          this.snackbarText = "Enregistrement nouveau club OK\n"
+          this.snackbar = true
+          this.snackbarColor = "success"
         }
 
-        await axios.post(clubApiUrl, clubData)
-          .then(response => {
-            this.club = response.data;
-            this.snackbarText = "Enregistrement nouveau club OK \n"
-            this.snackbar = true
-            this.snackbarColor = "success"
-          })
-          .catch(error => {
-            this.snackbarText = "Erreur lors de l'enregistrement du club \n"
-            this.snackbarText += error;
-            this.snackbar = true
-            this.snackbarColor = "error"
-          });
-
-        this.clubID = this.club.id
-
-        let inscrData = {
-          "nom": this.nom,
-          "prenom": this.prenom,
-          "date_naissance": this.dateNaissanceFormated,
-          "club_ID": this.clubID,
-          "sexe": this.sexe,
-          "ceinture": this.ceinture,
-          "poid": this.poid
+        const inscrData: InscriptionData = {
+          nom: this.nom,
+          prenom: this.prenom,
+          date_naissance: this.dateNaissanceFormated,
+          club_ID: (this.club as Club).id,
+          sexe: this.sexe,
+          ceinture: this.ceinture,
+          poid: this.poid !== null ? parseFloat(this.poid.toString()) : 0 
         }
 
-        axios.post(inscriptionApiUrl, inscrData)
-          .then(response => {
-            this.snackbarText += "Inscription OK\n"
-            console.log(response);
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
+        const response = await axios.post(API.inscriptionUrl, inscrData)
+        .then(reponse => {
+          this.snackbarText = "Enregistrement réalisé avec succés"
+          this.snackbarError = ""
+          this.snackbarColor = "success"
+          this.snackbar = true
+          this.step = 1
+          this.nom = "",
+          this.prenom = "",
+          this.dateNaissance = "",
+          this.club = "",
+          this.ceinture = "",
+          this.poid = null 
+        })
+        this.snackbarText += "Inscription OK\n"
+        console.log(response)
+      } catch (error) {
+        this.snackbarText = "Erreur lors de l'enregistrement\n" + error
+        this.snackbar = true
+        this.snackbarColor = "error"
+        console.error(error)
       }
     },
-    updateCategorie() {
-      this.categories = []
-      if (this.tournoiID != null) {
-        axios.get(categoriesApiUrl + this.tournoiID).then(response => {
+    async updateCategorie() {
+      if (this.tournoiID !== null) {
+        try {
+          const response = await axios.get(`${API.categoriesUrl}/${this.tournoiID}`)
           this.categories = response.data
-        });
+        } catch (error) {
+          console.error("Erreur lors de la récupération des catégories", error)
+        }
       }
     },
-    nextStep1() {
-      if (this.categoryID != null) {
-        axios.get(categoryApiUrl + this.categoryID).then(response => {
+    async nextStep1() {
+      if (this.categoryID !== null) {
+        try {
+          const response = await axios.get(`${API.categoryUrl}/${this.categoryID}`)
           this.category = response.data
           this.date_min = response.data.date_naissance_min.substring(0, 10)
           this.date_max = response.data.date_naissance_max.substring(0, 10)
           this.sexe = response.data.sexe
-        });
+        } catch (error) {
+          console.error("Erreur lors de la récupération de la catégorie", error)
+        }
       }
       this.step++
     },
-    nextStep2() {
-      axios.get(clubApiUrl).then(response => {
+    async nextStep2() {
+      try {
+        const response = await axios.get(API.clubsUrl)
         this.clubs = response.data
-      });
+      } catch (error) {
+        console.error("Erreur lors de la récupération des clubs", error)
+      }
       this.step++
     }
   },
-  mounted() {
-    axios.get(tournamentsApiUrl).then(response => {
+  async mounted() {
+    try {
+      console.log(API.tournamentsUrl)
+      const response = await axios.get(API.tournamentsUrl)
       this.tournois = response.data
-    });
+    } catch (error) {
+      console.error("Erreur lors de la récupération des tournois", error)
+    }
   }
 }
 </script>
+
 
 <template>
   <v-container cols="12">

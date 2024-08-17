@@ -1,6 +1,4 @@
-
-
-export class Club {
+export interface Tournament {
     id: number;
     nom: string;
-}
+  }

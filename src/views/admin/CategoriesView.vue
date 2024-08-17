@@ -1,22 +1,25 @@
 <script lang="ts">
 import axios from 'axios'
 import moment from 'moment'
+import * as API from '../../constants/api'
+import type { Tournament } from '../../interfaces/tournament'
+import type { Category } from '../../interfaces/category'
 
 const date = new Date();
 
 export default {
   data() {
     return {
-      tournois: [],
-      tournoiID: null,
-      tournoiSelectionne: null,
-      nom: "",
-      sexe: "",
+      tournaments: [] as Tournament[],
+      tournoiID: null as number | null,
+      selectedTournament: null,
+      name: "",
+      genre: "",
       dateNaissanceMin: "00/00/000 00:00",
       dateNaissanceMax: "00/00/000 23:59",
       anneeNaissanceMin: "",
       anneeNaissanceMax: "",
-      categories: [],
+      categories: []as Category[],
       snackbar: false,
       snackbarText: "",
       snackbarError: "",
@@ -26,8 +29,8 @@ export default {
   methods: {
     submit() {
       let data = {
-        "nom": this.nom,
-        "sexe": this.sexe,
+        "name": this.name,
+        "genre": this.genre,
         "date_naissance_min": moment("01/01/" + this.anneeNaissanceMin).format("YYYY-MM-DDT00:00:00Z"),
         "date_naissance_max": moment("12/31/" + this.anneeNaissanceMax).format("YYYY-MM-DDT23:59:00Z"),
         "poid_min": 0,
@@ -39,7 +42,7 @@ export default {
 
       console.log(data)
 
-      axios.post('http://localhost:8080/category', data)
+      axios.post(API.categoryUrl, data)
         .then(reponse => {
           this.snackbarText = "Enregistrement réalisé avec succés"
           this.snackbarError = ""
@@ -47,10 +50,10 @@ export default {
           this.snackbar = true
           this.dateNaissanceMin = moment(date.toISOString().slice(0, 11) + "00:00").format("YYYY-MM-DDT00:00:00Z")
           this.dateNaissanceMax = moment(date.toISOString().slice(0, 11) + "23:59").format("YYYY-MM-DDT00:00:00Z")
-          this.nom = ""
+          this.name = ""
           this.anneeNaissanceMax = ""
           this.anneeNaissanceMin = ""
-          this.sexe = ""
+          this.genre = ""
           this.updateCategorie()
         })
         .catch(error => {
@@ -63,15 +66,15 @@ export default {
     updateCategorie() {
       this.categories = []
       if (this.tournoiID != null) {
-        axios.get('http://localhost:8080/categories/' + this.tournoiID).then(response => {
+        axios.get(API.categoriesUrl + this.tournoiID).then(response => {
           this.categories = response.data
         });
       }
     }
   },
   mounted() {
-    axios.get('http://localhost:8080/tournaments').then(response => {
-      this.tournois = response.data
+    axios.get(API.tournamentsUrl).then(response => {
+      this.tournaments = response.data
     });
   }
 }
@@ -92,14 +95,14 @@ export default {
               <v-form @submit.prevent>
                 <v-row>
                   <v-col>
-                    <v-autocomplete label="Tournoi" v-model="tournoiID" :items="tournois" item-title="nom" item-text="nom"
+                    <v-autocomplete label="Tournoi" v-model="tournoiID" :items="tournaments" item-title="name" item-text="name"
                       item-value="id" variant="underlined" clear-icon="mdi-close-circle" clearable
                       prepend-icon="mdi-tournament" required @update:modelValue="updateCategorie" />
                   </v-col>
                 </v-row>
                 <v-row>
                   <v-col>
-                    <v-text-field v-model="nom" label="Nom" variant="underlined" clear-icon="mdi-close-circle" clearable
+                    <v-text-field v-model="name" label="name" variant="underlined" clear-icon="mdi-close-circle" clearable
                       prepend-icon="mdi-rename" required />
                   </v-col>
                 </v-row>
@@ -113,7 +116,7 @@ export default {
                       clear-icon="mdi-close-circle" clearable prepend-icon="mdi-calendar-account" required />
                   </v-col>
                 </v-row>
-                <v-radio-group v-model="sexe" inline>
+                <v-radio-group v-model="genre" inline>
                   <v-row>
                     <v-col class="cols-6">
                       <v-radio label="Fille" value="F" color="purple-accent-3" />

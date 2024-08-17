@@ -1,5 +1,6 @@
 <script lang="ts">
 import axios from 'axios'
+import * as API from '../../constants/api'
 import moment from 'moment';
 
 const date = new Date();
@@ -26,7 +27,7 @@ export default {
       }
 
       
-      axios.post('http://localhost:8080/tournament', data)
+      axios.post(API.tournamentUrl, data)
         .then(reponse => {
           this.updateTournaments()
           this.snackbarText = "Enregistrement réalisé avec succés"

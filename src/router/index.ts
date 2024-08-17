@@ -22,7 +22,7 @@ const router = createRouter({
     {
       path: '/admin/judokas',
       name: 'judokas',
-      component: () => import('../views/admin/JudokasView.vue')
+      component: () => import('../views/admin/InscriptionView.vue')
     },
     {
       path: '/admin/tournoi',
