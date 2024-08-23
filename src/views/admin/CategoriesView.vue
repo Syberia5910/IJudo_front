@@ -11,7 +11,7 @@ export default {
   data() {
     return {
       tournaments: [] as Tournament[],
-      tournoiID: null as number | null,
+      tournamentID: null as number | null,
       selectedTournament: null,
       name: "",
       genre: "",
@@ -35,12 +35,10 @@ export default {
         "date_naissance_max": moment("12/31/" + this.anneeNaissanceMax).format("YYYY-MM-DDT23:59:00Z"),
         "poid_min": 0,
         "poid_max": 0,
-        "tournament_ID": this.tournoiID,
+        "tournament_ID": this.tournamentID,
         "date_ouverture": moment("01/01/1970 00:00").format("YYYY-MM-DDT00:00:00Z"),
         "date_cloture": moment("01/01/1970 00:00").format("YYYY-MM-DDT00:00:00Z"),
       }
-
-      console.log(data)
 
       axios.post(API.categoryUrl, data)
         .then(reponse => {
@@ -54,7 +52,7 @@ export default {
           this.anneeNaissanceMax = ""
           this.anneeNaissanceMin = ""
           this.genre = ""
-          this.updateCategorie()
+          this.updateCategories()
         })
         .catch(error => {
           this.snackbarText = "Problème lors de l'enregistrement \n "
@@ -63,10 +61,10 @@ export default {
           this.snackbar = true
         });
     },
-    updateCategorie() {
+    updateCategories() {
       this.categories = []
-      if (this.tournoiID != null) {
-        axios.get(API.categoriesUrl + this.tournoiID).then(response => {
+      if (this.tournamentID != null) {
+        axios.get(API.categoriesUrl + '/' + this.tournamentID).then(response => {
           this.categories = response.data
         });
       }
@@ -95,9 +93,9 @@ export default {
               <v-form @submit.prevent>
                 <v-row>
                   <v-col>
-                    <v-autocomplete label="Tournoi" v-model="tournoiID" :items="tournaments" item-title="name" item-text="name"
-                      item-value="id" variant="underlined" clear-icon="mdi-close-circle" clearable
-                      prepend-icon="mdi-tournament" required @update:modelValue="updateCategorie" />
+                    <v-autocomplete label="Tournoi" v-model="tournamentID" :items="tournaments" item-title="nom" item-text="nom"
+                  item-value="id" variant="underlined" clear-icon="mdi-close-circle" clearable
+                  prepend-icon="mdi-tournament" required @update:modelValue="updateCategories" />
                   </v-col>
                 </v-row>
                 <v-row>

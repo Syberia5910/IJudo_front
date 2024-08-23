@@ -35,9 +35,9 @@
         </v-row>
         <v-row cols="12">
             <v-col>
-              <router-link :to="{ path: '/admin/configuration'}">
+              <router-link :to="{ path: '/admin/tournamentNew'}">
                 <v-card
-                  title="Configuration"
+                  title="New Tournament"
                   text="..."
                   elevation="12"
                   color="lime-lighten-1"

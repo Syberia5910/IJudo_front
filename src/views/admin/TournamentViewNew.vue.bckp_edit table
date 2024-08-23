@@ -1,0 +1,270 @@
+<script lang="ts">
+import axios from 'axios'
+import moment from 'moment'
+import * as API from '../../constants/api'
+import type { Category } from '../../interfaces/category'
+import type { Tournament } from '../../interfaces/tournament'
+
+export default {
+  data() {
+    return {
+      nom: "",
+      dateDebut: "",
+      dateFin: "",
+      tournament: null as Tournament | null,
+      categories: [] as Category[],
+      stepItems: ['Tournoi', 'Catégories', 'Validation'],
+      step: 1,
+      snackbar: false,
+      snackbarText: "",
+      snackbarError: "",
+      snackbarColor: ""
+    }
+  },
+
+  methods: {
+    async nextStep1() {
+      let data = {
+        "nom": this.nom,
+        "date_debut": moment(String(this.dateDebut)).format("YYYY-MM-DDThh:mm:00Z"),
+        "date_fin": moment(String(this.dateFin)).format("YYYY-MM-DDThh:mm:00Z"),
+      }
+      axios.post(API.tournamentUrl, data)
+        .then(response => {
+          this.tournament = response.data
+          this.snackbarText = "Enregistrement réalisé avec succés"
+          this.snackbarError = ""
+          this.snackbarColor = "success"
+          this.snackbar = true
+
+          this.updateCategories()
+
+          this.step++
+        })
+        .catch(error => {
+          this.snackbarText = "Problème lors de l'enregistrement \n "
+          this.snackbarError = error
+          this.snackbarColor = "error"
+          this.snackbar = true
+        });
+    },
+    updateCategories() {
+      console.log(this.tournament)
+      if (this.tournament != null) {
+        console.log('Update de caté !')
+        axios.get(API.categoriesUrl + '/' + this.tournament.id).then(response => {
+          this.categories = response.data
+          console.log(this.categories)
+        });
+      } else {
+        console.log('Pas d update de caté !')
+      }
+    },
+    giveYear(date: string): string {
+      return moment(date).format('YYYY');
+    },
+    giveHour(date: string): string {
+      return moment(date).format('hh:mm');
+    },
+    saveCategory(category: Category) {
+      axios.put(`${API.categoriesUrl}/${category.id}`, category)
+        .then(() => {
+          this.snackbarText = "Catégorie mise à jour avec succès";
+          this.snackbarColor = "success";
+          this.snackbar = true;
+        })
+        .catch(error => {
+          this.snackbarText = "Erreur lors de la mise à jour de la catégorie";
+          this.snackbarError = error;
+          this.snackbarColor = "error";
+          this.snackbar = true;
+        });
+    },
+    // Méthode pour supprimer une catégorie
+    deleteCategory(index: number) {
+      const category = this.categories[index];
+      axios.delete(`${API.categoriesUrl}/${category.id}`)
+        .then(() => {
+          this.categories.splice(index, 1); // Supprimer de la liste
+          this.snackbarText = "Catégorie supprimée avec succès";
+          this.snackbarColor = "success";
+          this.snackbar = true;
+        })
+        .catch(error => {
+          this.snackbarText = "Erreur lors de la suppression de la catégorie";
+          this.snackbarError = error;
+          this.snackbarColor = "error";
+          this.snackbar = true;
+        });
+    }
+  }
+}
+</script>
+
+<template>
+  <v-container cols="12">
+    <v-row>
+      <v-col cols="3"></v-col>
+      <v-col cols="12" class="align-center" :elevation="10">
+        <v-stepper :items="stepItems" v-model="step" editable alt-labels hide-actions cols="6">
+          <template v-slot:item.1>
+            <v-row>
+              <v-col cols="12" class="px-8">
+                <v-card :elevation="8" class="mx-auto" max-width="648">
+                  <v-layout>
+                    <v-app-bar :elevation="6" rounded class="bg-grey-lighten-1">
+                      <v-app-bar-title>Enregistrer un nouveau Tournoi</v-app-bar-title>
+                    </v-app-bar>
+
+                    <v-main>
+                      <v-container fluid>
+                        <v-form @submit.prevent>
+                          <v-row>
+                            <v-col>
+                              <v-text-field label="Nom du Tournoi" v-model="nom" variant="underlined"
+                                clear-icon="mdi-close-circle" clearable prepend-icon="mdi-map-marker" required />
+                            </v-col>
+                          </v-row>
+                          <v-row>
+                            <v-col>
+                              <v-text-field label="Date Début" v-model="dateDebut" variant="underlined"
+                                type="datetime-local" clear-icon="mdi-close-circle" clearable
+                                prepend-icon="mdi-calendar-account" required />
+                            </v-col>
+                          </v-row>
+                          <v-row>
+                            <v-col>
+                              <v-text-field label="Date Cloture" v-model="dateFin" variant="underlined"
+                                type="datetime-local" clear-icon="mdi-close-circle" clearable
+                                prepend-icon="mdi-calendar-account" required />
+                            </v-col>
+                          </v-row>
+                        </v-form>
+                      </v-container>
+                    </v-main>
+                  </v-layout>
+                </v-card>
+              </v-col>
+            </v-row>
+            <v-row>
+              <v-col>
+                <v-btn @click="step--" disabled prepend-icon="mdi-chevron-left" :elevation="4" class="mb-5">
+                  Précédent
+                </v-btn>
+              </v-col>
+              <v-col>
+                <v-btn @click="nextStep1" append-icon="mdi-chevron-right" :elevation="7" class="mb-5">
+                  Suivant
+                </v-btn>
+              </v-col>
+            </v-row>
+          </template>
+
+          <template v-slot:item.2>
+            <v-row>
+              <v-col cols="12" class="px-8">
+                <v-table>
+                  <thead>
+                    <tr>
+                      <th>Nom</th>
+                      <th>Sexe</th>
+                      <th>Naissance</th>
+                      <th>Horaire</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="category in categories" :key="category.id">
+                      <!-- Nom editable -->
+                      <td>
+                        <v-text-field v-model="category.nom" variant="underlined" dense hide-details />
+                      </td>
+                      <!-- Sexe editable -->
+                      <td>
+                        <v-select v-model="category.genre" :items="['M', 'F']" variant="underlined" dense
+                          hide-details />
+                      </td>
+                      <!-- Date de naissance editable -->
+                      <td>
+                        <v-text-field v-model="category.date_naissance_min" type="date" variant="underlined" dense
+                          hide-details />
+                        <v-text-field v-model="category.date_naissance_max" type="date" variant="underlined" dense
+                          hide-details />
+                      </td>
+                      <!-- Horaire editable -->
+                      <td>
+                        <v-text-field v-model="category.date_naissance_min" type="time" variant="underlined" dense
+                          hide-details />
+                        <v-text-field v-model="category.date_naissance_max" type="time" variant="underlined" dense
+                          hide-details />
+                      </td>
+                      <!-- Actions -->
+                      <td>
+                        <v-btn icon @click="saveCategory(category)" color="green" :elevation="2" title="Save">
+                          <v-icon>mdi-content-save</v-icon>
+                        </v-btn>
+                        <v-btn icon @click="deleteCategory(category.id)" color="red" :elevation="2" title="Delete">
+                          <v-icon>mdi-delete</v-icon>
+                        </v-btn>
+                      </td>
+                    </tr>
+                  </tbody>
+                </v-table>
+              </v-col>
+            </v-row>
+          </template>
+
+          <template v-slot:item.3>
+            <v-card flat>
+              <v-card>
+                <v-row>
+                  <!-- <v-col>
+                      <v-combobox label="Club" :items="clubs" v-model="club" item-title="nom" item-text="nom"
+                        item-value="id" variant="underlined" clear-icon="mdi-close-circle" clearable
+                        prepend-icon="mdi-map-marker" required />
+                    </v-col>
+                  </v-row>
+                  <v-row>
+                    <v-col>
+                      <v-autocomplete label="Ceinture" v-model="ceinture" :items="ceintures" variant="underlined"
+                        clear-icon="mdi-close-circle" clearable prepend-icon="mdi-ruler" required />
+                    </v-col>
+                  </v-row>
+                  <v-row>
+                    <v-col>
+                      <v-text-field label="Poid" v-model="poid" variant="underlined" type="numeric" suffix="kg"
+                        clear-icon="mdi-close-circle" clearable prepend-icon="mdi-weight-kilogram" required />
+                    </v-col>
+                  </v-row>
+                  <v-row>
+                    <v-col>
+                      <v-btn @click="step--" prepend-icon="mdi-chevron-left" :elevation="7" class="mb-5">
+                        Précédent
+                      </v-btn>
+                    </v-col>
+                    <v-col>
+                      <v-btn @click="submit" append-icon="mdi-content-save-plus-outline" color="green-lighten-3"
+                        :elevation="7" class="mb-5">
+                        Enregistrer
+                      </v-btn>
+                    </v-col> -->
+                </v-row>
+              </v-card>
+            </v-card>
+          </template>
+        </v-stepper>
+      </v-col>
+      <v-col cols="3"></v-col>
+    </v-row>
+  </v-container>
+
+  <v-snackbar v-model="snackbar" vertical :color="snackbarColor" :timeout="5000">
+    <div class="text-h6 pb-2"> {{ snackbarText }} </div>
+    <p>{{ snackbarError }}</p>
+
+    <template v-slot:actions>
+      <v-btn class="bg-grey-darken-2" color="white" variant="text" @click="snackbar = false" elevation="8">
+        Fermer
+      </v-btn>
+    </template>
+  </v-snackbar>
+</template>
