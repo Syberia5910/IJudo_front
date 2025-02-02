@@ -4,7 +4,9 @@
 // }
 
 export interface Club {
-    id: number;
     nom: string;
-    NomCourt: string;
-}  
+}
+
+export interface RegisteredClub extends Club {
+    id: number,
+}

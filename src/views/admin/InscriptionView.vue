@@ -1,11 +1,18 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted } from 'vue';
 import axios from 'axios';
-import type { Inscription } from '../../interfaces/inscription'
+import type { RegisteredInscription } from '../../interfaces/inscription'
 
 export default defineComponent({
+  methods: {
+    formatDate(dateString: string): string {
+      // On prend uniquement la partie YYYY-MM-DD
+      const [year, month, day] = dateString.split("T")[0].split("-");
+      return `${day}/${month}/${year}`; // JJ-MM-AAAA
+    },
+  },
   setup() {
-    const inscriptions = ref<Inscription[]>([]);
+    const inscriptions = ref<RegisteredInscription[]>([]);
 
     onMounted(async () => {
       try {
@@ -45,8 +52,8 @@ export default defineComponent({
           <td>{{ inscription.Judoka.nom }}</td>
           <td>{{ inscription.Judoka.prenom }}</td>
           <td>{{ inscription.Judoka.sexe }}</td>
-          <td>{{ inscription.Judoka.date_naissance }}</td>
-          <td>{{ inscription.Judoka.Club.nom }}</td>
+          <td>{{ formatDate(inscription.Judoka.date_naissance) }}</td>
+          <td>{{ inscription.Club.nom }}</td>
           <td>{{ inscription.Category.nom }}</td>
           <td>{{ inscription.poid }}</td>
           <td>{{ inscription.ceinture }}</td>

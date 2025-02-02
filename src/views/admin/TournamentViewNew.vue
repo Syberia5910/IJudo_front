@@ -8,9 +8,9 @@ import type { Tournament } from '../../interfaces/tournament'
 export default {
   data() {
     return {
-      nom: "",
-      dateDebut: "",
-      dateFin: "",
+      nom: "" as String,
+      dateTournoi: "",
+      minDate: "",
       tournament: null as Tournament | null,
       categories: [] as Category[],
       editedCategory: {} as Category,
@@ -25,13 +25,16 @@ export default {
       snackbarColor: ""
     }
   },
-
+  computed: {
+    validateTournamentForm() {
+      return this.nom !== "" && this.dateTournoi !== ""
+    }
+  },
   methods: {
     async nextStep1() {
       let data = {
         "nom": this.nom,
-        "date_debut": moment(String(this.dateDebut)).format("YYYY-MM-DDThh:mm:00Z"),
-        "date_fin": moment(String(this.dateFin)).format("YYYY-MM-DDThh:mm:00Z"),
+        "date": moment(String(this.dateTournoi)).format("YYYY-MM-DDThh:mm:00Z"),
       }
       axios.post(API.tournamentUrl, data)
         .then(response => {
@@ -55,13 +58,9 @@ export default {
     updateCategories() {
       console.log(this.tournament)
       if (this.tournament != null) {
-        console.log('Update de caté !')
         axios.get(API.categoriesUrl + '/' + this.tournament.id).then(response => {
           this.categories = response.data
-          console.log(this.categories)
         });
-      } else {
-        console.log('Pas d update de caté !')
       }
     },
     openEditModal(category: Category) {
@@ -117,8 +116,14 @@ export default {
     // Donne l'heure pour l'affichage des horaires
     giveHour(date: string): string {
       return moment(date).format('hh:mm');
+    },
+    created() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, "0"); // +1 car les mois commencent à 0
+      const day = String(today.getDate()).padStart(2, "0"); // Formatage du jour
+      this.minDate = `${year}-${month}-${day}`; // Format YYYY-MM-DD
     }
-  
   }
 }
 </script>
@@ -149,15 +154,8 @@ export default {
                           </v-row>
                           <v-row>
                             <v-col>
-                              <v-text-field label="Date Début" v-model="dateDebut" variant="underlined"
-                                type="datetime-local" clear-icon="mdi-close-circle" clearable
-                                prepend-icon="mdi-calendar-account" required />
-                            </v-col>
-                          </v-row>
-                          <v-row>
-                            <v-col>
-                              <v-text-field label="Date Cloture" v-model="dateFin" variant="underlined"
-                                type="datetime-local" clear-icon="mdi-close-circle" clearable
+                              <v-text-field label="Date" v-model="dateTournoi" variant="underlined"
+                                type="date" :min="minDate" clear-icon="mdi-close-circle" clearable
                                 prepend-icon="mdi-calendar-account" required />
                             </v-col>
                           </v-row>
@@ -170,12 +168,12 @@ export default {
             </v-row>
             <v-row>
               <v-col>
-                <v-btn @click="step--" disabled prepend-icon="mdi-chevron-left" :elevation="4" class="mb-5">
+                <v-btn disabled prepend-icon="mdi-chevron-left" :elevation="4" class="mb-5">
                   Précédent
                 </v-btn>
               </v-col>
               <v-col>
-                <v-btn @click="nextStep1" append-icon="mdi-chevron-right" :elevation="7" class="mb-5">
+                <v-btn @click="nextStep1" :disable="!validateTournamentForm" append-icon="mdi-chevron-right" :elevation="7" class="mb-5">
                   Suivant
                 </v-btn>
               </v-col>
@@ -194,18 +192,18 @@ export default {
                       <th>Horaire</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody> 
                     <tr v-for="(category, index) in categories" :key="category.id">
                       <td>{{ category.nom }}</td>
-                      <td>{{ category.genre }}</td>
+                      <td>{{ category.sexe }}</td>
                       <td>{{ giveYear(category.date_naissance_min) }} - {{ giveYear(category.date_naissance_max) }}</td>
-                      <td>{{ giveHour(category.date_naissance_min) }} - {{ giveHour(category.date_naissance_max) }}</td>
+                      <td>{{ giveHour(category.date_ouverture) }} - {{ giveHour(category.date_cloture) }}</td>
                       <td>
-                        <v-btn @click="openEditModal(category)" icon color="blue" :elevation="2">
-                          <v-icon>mdi-pencil</v-icon>
+                        <v-btn @click="openEditModal(category)" icon color="#8d9def" :elevation="2">
+                          <v-icon>mdi-account-edit</v-icon>
                         </v-btn>
-                        <v-btn @click="deleteCategory(index)" icon color="red" :elevation="2">
-                          <v-icon>mdi-delete</v-icon>
+                        <v-btn @click="deleteCategory(index)" icon color="#f26767" :elevation="2">
+                          <v-icon>mdi-delete-variant</v-icon>
                         </v-btn>
                       </td>
                     </tr>
@@ -213,24 +211,24 @@ export default {
                 </v-table>
               </v-col>
             </v-row>
-                <!-- Modal de modification -->
-    <v-dialog v-model="editDialog" max-width="600px">
-      <v-card>
-        <v-card-title class="headline">Modifier Catégorie</v-card-title>
-        <v-card-text>
-          <v-form>
-            <v-text-field v-model="editedCategory.nom" label="Nom" required />
-            <v-select v-model="editedCategory.genre" :items="['M', 'F']" label="Sexe" required />
-            <v-text-field v-model="editedCategory.date_naissance_min" label="Date de naissance min" type="date" required />
-            <v-text-field v-model="editedCategory.date_naissance_max" label="Date de naissance max" type="date" required />
-          </v-form>
-        </v-card-text>
-        <v-card-actions>
-          <v-btn @click="closeEditModal">Annuler</v-btn>
-          <v-btn color="green" @click="saveCategory">Sauvegarder</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+
+            <v-dialog v-model="editDialog" max-width="600px">
+              <v-card>
+                <v-card-title class="headline">Modifier Catégorie</v-card-title>
+                <v-card-text>
+                  <v-form>
+                    <v-text-field v-model="editedCategory.nom" label="Nom" required />
+                    <v-select v-model="editedCategory.sexe" :items="['M', 'F']" label="Sexe" required />
+                    <v-text-field v-model="editedCategory.date_naissance_min" label="Date de naissance min" type="date" required />
+                    <v-text-field v-model="editedCategory.date_naissance_max" label="Date de naissance max" type="date" required />
+                  </v-form>
+                </v-card-text>
+                <v-card-actions>
+                  <v-btn @click="closeEditModal">Annuler</v-btn>
+                  <v-btn color="green" @click="saveCategory">Sauvegarder</v-btn>
+                </v-card-actions>
+              </v-card>
+            </v-dialog>
           </template>
 
           <template v-slot:item.3>
