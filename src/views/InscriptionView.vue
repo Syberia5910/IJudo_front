@@ -46,54 +46,59 @@ export default {
   methods: {
     async submit() {
       this.snackbarText = ""
-
-      if (typeof this.club === "string") {
-        try {
-          const clubData: Club = { nom: this.club }
-          const response = await axios.post(API.clubUrl, clubData)
-          this.club = response.data
-          this.snackbarText = "Enregistrement nouveau club OK\n"
-          this.snackbar = true
-          this.snackbarColor = "success"
+      if (this.poid != null && this.poid > 0) {
+        if (typeof this.club === "string") {
+          try {
+            const clubData: Club = { nom: this.club }
+            const response = await axios.post(API.clubUrl, clubData)
+            this.club = response.data
+            this.snackbarText = "Enregistrement nouveau club OK\n"
+            this.snackbar = true
+            this.snackbarColor = "success"
+          }
+          catch (error) {
+            console.error("Erreur lors de l'enregistrement du nouveau club", error)
+            this.snackbarText = "Erreur lors de l'enregistrement du nouveau club\n" + error
+            this.snackbar = true
+            this.snackbarColor = "error"
+            return;
+          }
         }
-        catch (error) {
-          console.error("Erreur lors de l'enregistrement du nouveau club", error)
-          this.snackbarText = "Erreur lors de l'enregistrement du nouveau club\n" + error
+
+        try {
+          const inscrData: Inscription = {
+            poid: this.poid !== null ? parseFloat(this.poid.toString()) : 0,
+            ceinture: this.ceinture,
+            judoka_ID: this.judoka.id,
+            category_ID: this.category.id,
+            club_ID: (this.club as RegisteredClub).id,
+          }
+
+          const response = await axios.post(API.inscriptionUrl, inscrData)
+          .then(reponse => {
+            this.snackbarText = "Enregistrement réalisé avec succés\n"
+            this.snackbarError = ""
+            this.snackbarColor = "success"
+            this.snackbar = true
+            this.step = 1
+            this.nom = "",
+            this.prenom = "",
+            this.dateNaissance = "",
+            this.club = "",
+            this.ceinture = "",
+            this.poid = null 
+          })
+          this.snackbarText += "Inscription OK\n"
+        } catch (error) {
+          this.snackbarText = this.snackbarText + "Erreur lors de l'enregistrement\n" + error
           this.snackbar = true
           this.snackbarColor = "error"
-          return;
+          console.error(error)
         }
-      }
-
-      try {
-        const inscrData: Inscription = {
-          poid: this.poid !== null ? parseFloat(this.poid.toString()) : 0,
-          ceinture: this.ceinture,
-          judoka_ID: this.judoka.id,
-          category_ID: this.category.id,
-          club_ID: (this.club as RegisteredClub).id,
-        }
-
-        const response = await axios.post(API.inscriptionUrl, inscrData)
-        .then(reponse => {
-          this.snackbarText = "Enregistrement réalisé avec succés\n"
-          this.snackbarError = ""
-          this.snackbarColor = "success"
-          this.snackbar = true
-          this.step = 1
-          this.nom = "",
-          this.prenom = "",
-          this.dateNaissance = "",
-          this.club = "",
-          this.ceinture = "",
-          this.poid = null 
-        })
-        this.snackbarText += "Inscription OK\n"
-      } catch (error) {
-        this.snackbarText = this.snackbarText + "Erreur lors de l'enregistrement\n" + error
+      } else {
+        this.snackbarText = "Merci de renseigner un poid valide"
         this.snackbar = true
         this.snackbarColor = "error"
-        console.error(error)
       }
     },
     async updateCategorie() {

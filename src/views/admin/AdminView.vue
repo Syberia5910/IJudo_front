@@ -22,6 +22,8 @@
                 />
               </router-link>
             </v-col>
+        </v-row>
+        <v-row cols="12">
             <v-col cols="4">
               <router-link :to="{ path: '/admin/judokas'}">
                 <v-card 
@@ -32,35 +34,13 @@
                 />
               </router-link>
             </v-col>
-        </v-row>
-        <v-row cols="12">
-            <v-col>
-              <router-link :to="{ path: '/admin/tournamentNew'}">
+            <v-col cols="4">
+              <router-link :to="{ path: '/admin/pools'}">
                 <v-card
-                  title="New Tournament"
-                  text="..."
-                  elevation="12"
-                  color="lime-lighten-1"
-                />
-              </router-link>
-            </v-col>
-            <v-col>
-              <router-link :to="{ path: '/admin/configuration'}">
-                <v-card
-                  title="..."
+                  title="Poule"
                   text="..."
                   elevation="12"
                   color="blue-grey"
-                />
-              </router-link>
-            </v-col>
-            <v-col>
-              <router-link :to="{ path: '/admin/configuration'}">
-                <v-card
-                  title="..."
-                  text="..."
-                  elevation="12"
-                  color="grey"
                 />
               </router-link>
             </v-col>

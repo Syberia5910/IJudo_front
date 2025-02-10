@@ -35,9 +35,9 @@ const router = createRouter({
       component: () => import('@/views/admin/CategoriesView.vue')
     },
     {
-      path: '/admin/tournamentNew',
+      path: '/admin/pools',
       name: 'new tournament',
-      component: () => import('@/views/admin/TournamentViewNew.vue')
+      component: () => import('@/views/admin/PoolsView.vue')
     },
     {
       path: '/about',
