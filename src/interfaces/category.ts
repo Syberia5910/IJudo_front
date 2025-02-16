@@ -11,7 +11,6 @@ import type { Tournament } from "./tournament";
 export interface Category {
     id: number;
     nom: string;
-    sexe: string;
     date_naissance_min: string;
     date_naissance_max: string;
     date_ouverture: string;

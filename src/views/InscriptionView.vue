@@ -46,7 +46,7 @@ export default {
   methods: {
     async submit() {
       this.snackbarText = ""
-      if (this.poid != null && this.poid > 0) {
+      if (this.poid != null && this.poid > 0 && this.ceinture != "" && this.club != "") {
         if (typeof this.club === "string") {
           try {
             const clubData: Club = { nom: this.club }
@@ -85,6 +85,7 @@ export default {
             this.prenom = "",
             this.dateNaissance = "",
             this.club = "",
+            this.sexe = "",
             this.ceinture = "",
             this.poid = null 
           })
@@ -96,7 +97,7 @@ export default {
           console.error(error)
         }
       } else {
-        this.snackbarText = "Merci de renseigner un poid valide"
+        this.snackbarText = "Merci de renseigner correctement votre formulaire !"
         this.snackbar = true
         this.snackbarColor = "error"
       }
@@ -118,7 +119,6 @@ export default {
           this.category = response.data
           this.date_naissance_min = response.data.date_naissance_max.substring(0, 10)
           this.date_naissance_max = response.data.date_naissance_min.substring(0, 10)
-          this.sexe = response.data.sexe
         } catch (error) {
           console.error("Erreur lors de la récupération des catégories", error)
           this.snackbarText = "Erreur lors de la récupération des catégories\n" + error
@@ -199,7 +199,7 @@ export default {
     <v-row>
       <v-col cols="3"></v-col>
       <v-col cols="6" class="align-center" :elevation="10">
-        <v-stepper :items="stepItems" v-model="step" editable alt-labels hide-actions cols="6">
+        <v-stepper :items="stepItems" v-model="step" alt-labels hide-actions cols="6" class="elevation-12" >
           <template v-slot:item.1>
             <v-row>
               <v-col>
@@ -243,7 +243,7 @@ export default {
               </v-col>
             </v-row>
 
-            <v-radio-group v-model="sexe" inline disabled>
+            <v-radio-group v-model="sexe" inline>
               <v-row>
                 <v-col class="cols-6">
                   <v-radio label="Fille" value="F" color="purple-accent-3" />
