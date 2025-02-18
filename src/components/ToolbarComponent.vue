@@ -1,6 +1,5 @@
 <template>
-  <v-app-bar scroll-behavior="inverted
-    collapse" color="#546665">
+  <v-app-bar scroll-behavior="inverted " color="#546665"><!-- Si on veut qu'elle se retracte on ajoutera collapse dans le scroll-behavior -->
     <template v-slot:prepend>
       <v-app-bar-nav-icon @click="drawer ? drawer = false : drawer = true" />
     </template>
@@ -13,9 +12,8 @@
     </template>
   </v-app-bar>
 
-  <v-navigation-drawer v-model="drawer" absolute temporary>
+  <v-navigation-drawer v-model="drawer"  temporary height=100%>
     <v-list nav dense>
-      <v-list-item-group v-model="group" active-class="deep-purple--text text--accent-4">
         <router-link to="/" class="navigation-link">
           <v-list-item prepend-icon="mdi-home" title="Accueil" />
         </router-link>
@@ -23,14 +21,12 @@
         <router-link to="/inscription" class="navigation-link">
           <v-list-item prepend-icon="mdi-account-plus-outline" title="Inscrition" />
         </router-link>
-      </v-list-item-group>
     </v-list>
     <template v-slot:append>
       <v-list nav dense>
 
         <v-divider inset></v-divider>
 
-        <v-list-item-group v-model="group" active-class="deep-purple--text text--accent-4">
           <v-list-subheader inset>Admin</v-list-subheader>
 
           <router-link to="/admin" class="navigation-link">
@@ -44,7 +40,7 @@
           <router-link to="/admin/categorie" class="navigation-link">
             <v-list-item prepend-icon="mdi-code-block-brackets" title="Categorie" />
           </router-link>
-        </v-list-item-group></v-list>
+        </v-list>
     </template>
   </v-navigation-drawer>
 </template>

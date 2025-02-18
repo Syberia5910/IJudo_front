@@ -1,12 +1,18 @@
 import type { Category } from "./category";
-import type { Judoka } from "./judoka";
+import type { RegisteredJudoka } from "./judoka";
+import type { RegisteredClub } from "./club";
 
 export interface Inscription {
-    id: number;
     poid: number;
     ceinture: string;
     judoka_ID: number;
-    Judoka: Judoka;
     category_ID: number;
-    Category: Category;
+    club_ID: number;
   }
+
+export interface RegisteredInscription extends Inscription {
+  id: number;
+  Club: RegisteredClub;
+  Judoka: RegisteredJudoka;
+  Category: Category;
+}
