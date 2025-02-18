@@ -195,7 +195,6 @@ export default {
                   <tbody> 
                     <tr v-for="(category, index) in categories" :key="category.id">
                       <td>{{ category.nom }}</td>
-                      <td>{{ category.sexe }}</td>
                       <td>{{ giveYear(category.date_naissance_min) }} - {{ giveYear(category.date_naissance_max) }}</td>
                       <td>{{ giveHour(category.date_ouverture) }} - {{ giveHour(category.date_cloture) }}</td>
                       <td>
@@ -218,7 +217,6 @@ export default {
                 <v-card-text>
                   <v-form>
                     <v-text-field v-model="editedCategory.nom" label="Nom" required />
-                    <v-select v-model="editedCategory.sexe" :items="['M', 'F']" label="Sexe" required />
                     <v-text-field v-model="editedCategory.date_naissance_min" label="Date de naissance min" type="date" required />
                     <v-text-field v-model="editedCategory.date_naissance_max" label="Date de naissance max" type="date" required />
                   </v-form>
