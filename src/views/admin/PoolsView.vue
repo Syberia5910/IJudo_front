@@ -47,12 +47,15 @@ export default {
         },
         printPool() {
             var validate = 0
-            this.pools.forEach((item) => {
-                    if ( item.Registrations.length < 2 || item.Registrations.length > 5 || item.Registrations.length == 0) {
-                        validate++;
-                    }
+            for (let i = this.pools.length - 1; i >= 0; i--) {
+                const pool = this.pools[i];
+                
+                if ( pool.Registrations.length == 0 ) {
+                    this.pools.splice(i, 1);
+                } else if ( pool.Registrations.length < 2 || pool.Registrations.length > 5 ) {
+                    validate++;
                 }
-            )
+            }
             if (validate == 0) {
                 const response = axios({
                     url: API.pdfUrl,
@@ -64,9 +67,8 @@ export default {
                     window.open(fileURL); // Ouvre le PDF dans un nouvel onglet
                 });
             } else {
-                console.error("Les poules ne sont pas correctement créé\nNombre de participant inférieur a 2 ou suppérieur a 6\nPoule avec des filles et des garçons mélangés")
                 this.snackbarText = "Les poules ne sont pas correctement créé\n"
-                this.snackbarText += "Nombre de participant inférieur a 2 ou suppérieur a 6\n"
+                this.snackbarText += "Nombre de participant doit être compris entre 2 et 5\n"
                 this.snackbarText += "Poule avec des filles et des garçons mélangés"
                 this.snackbar = true
                 this.snackbarColor = "error"
