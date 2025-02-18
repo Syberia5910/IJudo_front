@@ -84,7 +84,7 @@ export default {
                 <v-btn  variant="tonal" append-icon="mdi-plus-circle" v-on:click="addPool()">Ajouter une poule</v-btn>
             </v-col>
             <v-col cols="auto">
-                <v-btn  variant="tonal" append-icon="mdi-printer" v-on:click="printPool()">Imprimes les poules</v-btn>
+                <v-btn  variant="tonal" append-icon="mdi-printer" v-on:click="printPool()">Imprimer les poules</v-btn>
             </v-col>
         </v-row>
      </v-app-bar>
